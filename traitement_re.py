@@ -10,13 +10,14 @@ filesList = os.listdir(folderName)
 # All the file 
 
 for filename in filesList:
-	if filename.endswith(".txt"):
+	# Analyse if document is "carte etudiante"
+	if filename.endswith("CE.txt"):
 		print(os.path.join(folderName,filename))
 		currentFile = os.path.join(folderName,filename)
 		with open(currentFile, 'r') as filename:
 			currentText = filename.read()
-			if re.search(r'carte d+\W+assurance maladie', currentText):
-				print(currentFile +" est une carte vitale")
-			if re.search(r'INE', currentText):
+			print currentText
+			if re.search(r'INE', currentText) and re.search(r'tudiant', currentText):
 				print(currentFile +" est une carte etudiante")
 		
+# python traitement_re.py Images/outputFolder/
