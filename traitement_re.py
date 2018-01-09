@@ -16,7 +16,6 @@ for filename in filesList:
 		currentFile = os.path.join(folderName,filename)
 		with open(currentFile, 'r') as filename:
 			currentText = filename.read()
-			print currentText
 			if re.search(r'INE', currentText) and re.search(r'tudiant', currentText):
 				print(currentFile +" est une carte etudiante")
 		
