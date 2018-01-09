@@ -17,10 +17,6 @@ for filename in filesList:
 		currentFile = os.path.join(folderName,filename)
 		with open(currentFile, 'r') as filename:
 			currentText = filename.read()
-<<<<<<< HEAD
-			if re.search(r'INE', currentText) and re.search(r'tudiant', currentText):
-				print(currentFile +" est une carte etudiante")
-=======
 			pourcent = 0
 			if re.search(r'[0-9]{10}', currentText):
 				pourcent += 0.1
@@ -57,6 +53,5 @@ for filename in filesList:
 				print(currentFile + " est un passeport : " + str(pourcentPasseport))
 			if pourcentID > 0.75:	
 				print(currentFile + " est une carte d'identite : " + str(pourcentID))
->>>>>>> da56debc220c5d0a7771abefda198de9b136e18b
 		
 # python traitement_re.py Images/outputFolder/
