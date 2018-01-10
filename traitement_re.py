@@ -79,14 +79,14 @@ for filename in filesList:
 		with open(currentFile, 'r') as file:
 			valueCE = dictionnaryCE.get(filename[:-6])
 			currentText = file.read()
-			if re.search(r'(IilL|)?NE', currentText, flags=re.IGNORECASE):
+			if re.search(r'[il|]ne', currentText, flags=re.IGNORECASE):
 				valueCE += 0.4
 				valuePASS -= 0.5
 				valueID -= 0.5
 				dictionnaryCE[filename[:-6]] = valueCE
 				dictionnaryID[filename[:-6]] = valueID
 				dictionnaryPASS[filename[:-6]] = valuePASS
-			if re.search(r'[eé]tudiant', currentText, flags=re.IGNORECASE):
+			if re.search(r'[eé]tud[il|]ant', currentText, flags=re.IGNORECASE):
 				valueCE += 0.4
 				valuePASS -= 0.4
 				valueID -= 0.4
@@ -115,7 +115,7 @@ for filename in filesList:
 				valueID -= 0.8
 				dictionnaryPASS[filename[:-7]] = valuePASS
 				dictionnaryID[filename[:-7]] = valueID
-			if re.search(r'r[eéè]publique fran[çc]aise', currentText, flags=re.IGNORECASE):
+			if re.search(r'r[eéè]publ[il|]que fran[çc]a[il|]se', currentText, flags=re.IGNORECASE):
 				valueID += 0.2
 				valuePASS += 0.2
 				dictionnaryID[filename[:-7]] = valueID
@@ -125,10 +125,10 @@ for filename in filesList:
 				valuePASS -= 0.4
 				dictionnaryPASS[filename[:-7]] = valuePASS
 				dictionnaryID[filename[:-7]] = valueID
-			if re.search(r'nationnale', currentText, flags=re.IGNORECASE):
+			if re.search(r'nat[il|]onnale', currentText, flags=re.IGNORECASE):
 				valueID += 0.3
 				dictionnaryID[filename[:-7]] = valueID
-			if re.search(r'identit[eé]', currentText, flags=re.IGNORECASE):
+			if re.search(r'[il|]dent[il|]t[eé]', currentText, flags=re.IGNORECASE):
 				valueID += 0.4
 				valuePASS -= 0.7
 				dictionnaryID[filename[:-7]] = valueID
@@ -146,7 +146,7 @@ for filename in filesList:
 			valuePASS = dictionnaryPASS[filename[:-7]]
 			valueID = dictionnaryID[filename[:-7]]
 			currentText = file.read()
-			if re.search(r'idfra', currentText, flags=re.IGNORECASE):
+			if re.search(r'[il|]dfra', currentText, flags=re.IGNORECASE):
 				valuePASS += 0.2
 				valueID += 0.2
 				dictionnaryPASS[filename[:-7]] = valuePASS
@@ -190,19 +190,19 @@ print ""
 print ""
 print "les cartes etudiantes sont :"
 for key, value in sorted(dictionnaryCE.iteritems(), key=lambda (k,v): (v,k), reverse=True):
-	if value >= 0.4:
+	if value >= 0:
 		print key + " a : " + str(value*100) + "%"
 
 print ""
 print "les cartes d'identite sont :"
 for key, value in sorted(dictionnaryID.iteritems(), key=lambda (k,v): (v,k), reverse=True):
-	if value >= 0.4:
+	if value >= 0:
 		print key + " a : " + str(value*100) + "%"
 
 print ""
 print "les passeports sont :"
 for key, value in sorted(dictionnaryPASS.iteritems(), key=lambda (k,v): (v,k), reverse=True):
-	if value >= 0.4:
+	if value >= 0:
 		print key + " a : " + str(value*100) + "%"
 print ""
 print ""
