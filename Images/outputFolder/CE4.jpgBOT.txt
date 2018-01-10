@@ -1,15 +1,13 @@
--
-a
-z
-a
->
-..
-z
+3
+2
+.u
+2
+Z
 3
 
 N° INE : 2204008558 b
-N° étudiant I 185202
-37 Rachelle
+N° étudiant : 185202
+la Rochelle
 
  
 

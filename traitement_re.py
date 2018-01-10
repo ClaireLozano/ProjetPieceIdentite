@@ -11,7 +11,6 @@ from PIL import Image
 import numpy as np
 import cv2
 
-
 def crop_image(img):
 	im = Image.open(img)
 	width, height = im.size
@@ -33,7 +32,7 @@ def crop_image(img):
 	cropRightPicture.save('cropRightPicture.bmp')
 	cropLeftPicture.save('cropLeftPicture.bmp')
 
-	# return the 3 croped images
+	# return the 2 croped profile pictures
 	return cropLeftPicture, cropRightPicture
 
 
@@ -74,22 +73,26 @@ for filename in filesList:
 	if filename.endswith("CE.txt"):
 		if filename[:-6] not in dictionnaryCE:
 			dictionnaryCE[filename[:-6]] = 0
+			dictionnaryPASS[filename[:-6]] = 0
+			dictionnaryID[filename[:-6]] = 0
 		currentFile = os.path.join(folderName,filename)
 		with open(currentFile, 'r') as file:
 			valueCE = dictionnaryCE.get(filename[:-6])
 			currentText = file.read()
-			if re.search(r'[0-9]{10}', currentText, flags=re.IGNORECASE):
-				valueCE += 0.1
-				dictionnaryCE[filename[:-6]] = valueCE
-			if re.search(r'[0-9]{6}', currentText, flags=re.IGNORECASE):
-				valueCE += 0.1
-				dictionnaryCE[filename[:-6]] = valueCE
 			if re.search(r'(IilL|)?NE', currentText, flags=re.IGNORECASE):
 				valueCE += 0.4
+				valuePASS -= 0.5
+				valueID -= 0.5
 				dictionnaryCE[filename[:-6]] = valueCE
+				dictionnaryID[filename[:-6]] = valueID
+				dictionnaryPASS[filename[:-6]] = valuePASS
 			if re.search(r'[eé]tudiant', currentText, flags=re.IGNORECASE):
 				valueCE += 0.4
+				valuePASS -= 0.4
+				valueID -= 0.4
 				dictionnaryCE[filename[:-6]] = valueCE
+				dictionnaryID[filename[:-6]] = valueID
+				dictionnaryPASS[filename[:-6]] = valuePASS
 
 	# Analyse if document is "passeport" or "carte d'identite"
 	elif filename.endswith("TOP.txt"):
@@ -103,26 +106,56 @@ for filename in filesList:
 			valueID = dictionnaryID[filename[:-7]]
 			currentText = file.read()
 			if re.search(r'passeport', currentText, flags=re.IGNORECASE):
-				valuePASS += 0.5
+				valuePASS += 0.7
+				valueID -= 0.8
 				dictionnaryPASS[filename[:-7]] = valuePASS
-			if re.search(r'passport', currentText, flags=re.IGNORECASE):
-				valuePASS += 0.3
-				dictionnaryPASS[filename[:-7]] = valuePASS
-			if re.search(r'publique fran[çc]aise', currentText, flags=re.IGNORECASE):
-				valueID += 0.2
 				dictionnaryID[filename[:-7]] = valueID
+			if re.search(r'passport', currentText, flags=re.IGNORECASE):
+				valuePASS += 0.7
+				valueID -= 0.8
+				dictionnaryPASS[filename[:-7]] = valuePASS
+				dictionnaryID[filename[:-7]] = valueID
+			if re.search(r'r[eéè]publique fran[çc]aise', currentText, flags=re.IGNORECASE):
+				valueID += 0.2
 				valuePASS += 0.2
+				dictionnaryID[filename[:-7]] = valueID
 				dictionnaryPASS[filename[:-7]] = valuePASS
 			if re.search(r'carte', currentText, flags=re.IGNORECASE):
 				valueID += 0.2
+				valuePASS -= 0.4
+				dictionnaryPASS[filename[:-7]] = valuePASS
 				dictionnaryID[filename[:-7]] = valueID
 			if re.search(r'nationnale', currentText, flags=re.IGNORECASE):
 				valueID += 0.3
 				dictionnaryID[filename[:-7]] = valueID
 			if re.search(r'identit[eé]', currentText, flags=re.IGNORECASE):
 				valueID += 0.4
+				valuePASS -= 0.7
 				dictionnaryID[filename[:-7]] = valueID
+				dictionnaryPASS[filename[:-7]] = valuePASS
 
+
+	# Analyse if document is "passeport" or "carte d'identite"
+	elif filename.endswith("BOT.txt"):
+		if filename[:-7] not in dictionnaryID:
+			dictionnaryID[filename[:-7]] = 0
+		if filename[:-7] not in dictionnaryPASS:
+			dictionnaryPASS[filename[:-7]] = 0
+		currentFile = os.path.join(folderName,filename)
+		with open(currentFile, 'r') as file:
+			valuePASS = dictionnaryPASS[filename[:-7]]
+			valueID = dictionnaryID[filename[:-7]]
+			currentText = file.read()
+			if re.search(r'idfra', currentText, flags=re.IGNORECASE):
+				valuePASS += 0.2
+				valueID += 0.2
+				dictionnaryPASS[filename[:-7]] = valuePASS
+				dictionnaryID[filename[:-7]] = valueID
+			if re.search(r'<<<<<<<', currentText, flags=re.IGNORECASE):
+				valuePASS += 0.2
+				valueID += 0.2
+				dictionnaryPASS[filename[:-7]] = valuePASS
+				dictionnaryID[filename[:-7]] = valueID
 
 
 ImageBase = "Images/Base"
@@ -152,33 +185,26 @@ for filename in filesList:
 		valueCE += 0.5
 		dictionnaryCE[filename] = valueCE
 
-
 # Print result
 print ""
 print ""
 print "les cartes etudiantes sont :"
-for CE in dictionnaryCE:
-	if dictionnaryCE[CE] > 0.6:
-		print CE + " a : " + str(dictionnaryCE[CE])
+for key, value in sorted(dictionnaryCE.iteritems(), key=lambda (k,v): (v,k), reverse=True):
+	if value >= 0.4:
+		print key + " a : " + str(value*100) + "%"
 
 print ""
 print "les cartes d'identite sont :"
-for ID in dictionnaryID:
-	if dictionnaryID[ID] > 0.6:
-		print ID + " a : " + str(dictionnaryID[ID])
+for key, value in sorted(dictionnaryID.iteritems(), key=lambda (k,v): (v,k), reverse=True):
+	if value >= 0.4:
+		print key + " a : " + str(value*100) + "%"
 
 print ""
 print "les passeports sont :"
-for PASS in dictionnaryPASS:
-	if dictionnaryPASS[PASS] > 0.6:
-		print PASS + " a : " + str(dictionnaryPASS[PASS])
+for key, value in sorted(dictionnaryPASS.iteritems(), key=lambda (k,v): (v,k), reverse=True):
+	if value >= 0.4:
+		print key + " a : " + str(value*100) + "%"
 print ""
 print ""
-
-
-
-
-
-
 
 # python traitement_re.py Images/outputFolder/
