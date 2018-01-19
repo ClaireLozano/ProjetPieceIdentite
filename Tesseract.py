@@ -7,59 +7,55 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy
 import scipy.misc
-from PIL import Image
 import cv2
+
+from PIL import Image
 
 # Retourne une image binariser 
 def getNBImage(img):
 
-	# gray
+	# Transformation d'une image couleur en une image en noir et blanc
 	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 	img = img.astype(numpy.uint8)
 
-	# denoised
+	# Réduction du bruit
 	dst = cv2.fastNlMeansDenoising(img,None, 8, 7, 21)
 
-	# egalized histogram
-	# equ = cv2.equalizeHist(dst)
-	# res = numpy.hstack((dst,equ)) #stacking images side-by-side
-
-	# binarasation image : otsu
+	# Binarasation de l'image image 
+	# Méthode utilisée : otsu
 	ret, thresh = cv2.threshold(dst,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-	NBimage = numpy.invert(thresh)
-	return NBimage
+	return numpy.invert(thresh)
 
+
+# Découpe une image et renvoie trois morceaux de l'image placée en paramêtre
 def crop_image(im):
 	width, height = im.size
 
-	# crop 3 part of images
+	# Partie en bas à gauche au niveau des informations de la carte étudiante
 	startx = 0
 	starty = height*0.75
 	endx = width*0.5
 	endy = height
-	cropImageCE = im.crop((int(startx), int(starty), int(endx), int(endy)))
-	a = numpy.asarray(cropImageCE)
-	cropImageCE = getNBImage(a)
+	cropImageCE = getNBImage(numpy.asarray(im.crop((int(startx), int(starty), int(endx), int(endy)))))
 
+	# Partie du haut qui permettra de définir c'est c'est une carte d'identité ou un passeport
 	startx = 0
 	starty = 0
 	endx = width
 	endy = height*0.30
-	cropImageTOP = im.crop((int(startx), int(starty), int(endx), int(endy)))
-	a = numpy.asarray(cropImageTOP)
-	cropImageTOP = getNBImage(a)
+	cropImageTOP = getNBImage(numpy.asarray(im.crop((int(startx), int(starty), int(endx), int(endy)))))
 	
+	# Partie du bas qui permettra de définir c'est c'est une carte d'identité ou un passeport
 	startx = 0
 	starty = height*0.75
 	endx = width
 	endy = height
-	cropImageBOT = im.crop((int(startx), int(starty), int(endx), int(endy)))
-	a = numpy.asarray(cropImageBOT)
-	cropImageBOT = getNBImage(a)
+	cropImageBOT = getNBImage(numpy.asarray(im.crop((int(startx), int(starty), int(endx), int(endy)))))
 
-	# return the 3 croped images
 	return cropImageCE, cropImageTOP, cropImageBOT
 
+
+# Fonction de récupération et sauvegarde du texte retrouvé par l'ocr (tesseract)
 def get_text(folder, folder_base):
 	outputFolder = folder
 	for file in os.listdir(folder_base):
@@ -67,21 +63,25 @@ def get_text(folder, folder_base):
 			img = os.path.join(folder_base, file)
 			im = Image.open(folder_base + "/" + file)
 			
-			# get croped image  
+			# Découper l'image en trois morceaux  
 			cropImageCE, cropImageTOP, cropImageBOT = crop_image(im)
 
-			# save and open croped image
+			# Sauvegarder et ouverture des images
 			scipy.misc.imsave('cropCE.jpg', cropImageCE)
 			scipy.misc.imsave('cropTOP.jpg', cropImageTOP)
 			scipy.misc.imsave('cropBOT.jpg', cropImageBOT)
-
 			imgCE = os.path.join('cropCE.jpg')
 			imgTOP = os.path.join('cropTOP.jpg')
 			imgBOT = os.path.join('cropBOT.jpg')
 
-			# use tesseract
+			# Passage de l'ocr tesseract sur les images
 			os.system('tesseract ' + imgCE + ' ' + outputFolder + file + "CE")
 			os.system('tesseract ' + imgTOP + ' ' + outputFolder + file + "TOP")
 			os.system('tesseract ' + imgBOT + ' ' + outputFolder + file + "BOT")
 
 get_text('Images/outputFolder/', "Images/Base")
+
+# Suppression de fichier inutile
+os.remove("cropCE.jpg")
+os.remove("cropTOP.jpg")
+os.remove("cropBOT.jpg")
